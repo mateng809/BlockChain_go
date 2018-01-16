@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"crypto/sha256"
 	"fmt"
+	"os"
 	"strconv"
 	"time"
 )
@@ -45,14 +46,19 @@ func (this *Block) SetHash() {
 	创建一个区块
 */
 func NewBlock(data string, prevBlockHash []byte) *Block {
-	//time.Now() 会返回一个time类型, "2018-01-14 14:53:21.053635209 +0800 CST m=+0.000259481"
-	//time.Now().Unix() 会返回一个int64类型到 日历时间
+	//生成一个区块变量
 	block := Block{}
+
+	//time.Now() 会返回一个time类型,
+	//例如: "2018-01-14 14:53:21.053635209 +0800 CST m=+0.000259481"
+	//time.Now().Unix() 会返回一个int64类型到 日历时间
 	block.Timestamp = time.Now().Unix()
+	//添加此区块存放到信息数据
 	block.Data = []byte(data)
 	block.PrevBlockHash = prevBlockHash
 	block.Hash = []byte{} //暂时当前到hash还没有计算
 
+	//此步会生成当前区块到Hash值
 	block.SetHash()
 
 	return &block
@@ -62,7 +68,7 @@ func NewBlock(data string, prevBlockHash []byte) *Block {
 	区块链结构
 */
 type Blockchain struct {
-	Blocks []*Block //有序到区块链
+	Blocks []*Block //有序的区块链
 }
 
 //添加一个区块到区块链中
@@ -91,14 +97,31 @@ func main() {
 	//创建一个区块链bc
 	bc := NewBlockChain()
 
-	bc.AddBlock("Send 1 BTC to Aceld")
-	bc.AddBlock("Send 2 ETH to 刘丹冰")
-	bc.AddBlock("Send 3 XRP to ITCAST")
+	var cmd string
 
-	for _, block := range bc.Blocks {
-		fmt.Printf("Prev.Hash : %x\n", block.PrevBlockHash)
-		fmt.Printf("Data : %s\n", block.Data)
-		fmt.Printf("Hash : %x\n", block.Hash)
-		fmt.Println("=======================")
+	for {
+		fmt.Println("按 '1' 添加一条区块行为数据")
+		fmt.Println("按 '2' 遍历当前区块链")
+		fmt.Println("按 其他按键退出")
+		fmt.Scanf("%s\n", &cmd)
+
+		switch cmd {
+		case "1":
+			input := make([]byte, 1024)
+			fmt.Println("请输入区块链行为数据")
+			os.Stdin.Read(input)
+			bc.AddBlock(string(input))
+		case "2":
+			for _, block := range bc.Blocks {
+				fmt.Println("=======================")
+				fmt.Printf("Prev.Hash : %x\n", block.PrevBlockHash)
+				fmt.Printf("Data : %s\n", block.Data)
+				fmt.Printf("Hash : %x\n", block.Hash)
+				fmt.Println("=======================")
+			}
+		default:
+			fmt.Println("您已经退出")
+			return
+		}
 	}
 }
